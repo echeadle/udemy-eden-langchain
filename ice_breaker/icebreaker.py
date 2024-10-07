@@ -11,9 +11,9 @@ load_dotenv()
 if __name__ == "__main__":
 
     summary_template = """
-        given the Linkedin information {information} about a person, I want you to create:
-        1. a short summary
-        2. Two interesting facts about them
+    given the Linkedin information {information} about a person I want you to create:
+    1. A short summary
+    2. two interesting facts about them
     """
 
     summary_prompt_template = PromptTemplate(

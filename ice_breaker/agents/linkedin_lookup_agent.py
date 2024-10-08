@@ -1,8 +1,14 @@
 import os
+import sys 
 from dotenv import load_dotenv
 load_dotenv()
+pythonpath = os.getenv("PYPATH")
+print(f'Python path 1={pythonpath}')
+if pythonpath and pythonpath not in sys.path:
+    sys.path.append(pythonpath)
+print(sys.path)
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import PromptTemplate
+from langchain.prompts.prompt import PromptTemplate
 from langchain_core.tools import Tool
 from langchain.agents import (
     create_react_agent,
@@ -10,7 +16,6 @@ from langchain.agents import (
 )
 from langchain import hub
 from tools.tools import get_profile_url_tavily
-
 
 
 def lookup(name: str)->str:
@@ -27,7 +32,7 @@ def lookup(name: str)->str:
     tools_for_agent = [
         Tool(
             name="Crawl Google 4 linkedin profile page",
-            func="get_profile_url_tavily",
+            func=get_profile_url_tavily,
             description="useful for when you need to get the Linkedin Page URL",
         )
     ]
@@ -44,5 +49,11 @@ def lookup(name: str)->str:
     return linked_profile_url
 
 if __name__== "__main__":
+    pythonpath = os.getenv("PYPATH")
+    print(f'Python path 1={pythonpath}')
+    if pythonpath and pythonpath not in sys.path:
+        sys.path.append(pythonpath)
+    print(sys.path)
+
     linkedin_url = lookup(name="Edward Cheadle")
     print(linkedin_url)

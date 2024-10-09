@@ -1,3 +1,5 @@
+import os
+import sys
 from langchain_core.prompts import PromptTemplate
 from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
@@ -8,8 +10,11 @@ from dotenv import load_dotenv
 from tools.tools import get_profile_url_tavily
 
 load_dotenv()
-
-
+pythonpath = os.getenv("PYPATH")
+print(f'Python path 1={pythonpath}')
+if pythonpath and pythonpath not in sys.path:
+    sys.path.append(pythonpath)
+print(sys.path)
 def lookup(name: str) -> str:
     llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
     template = """

@@ -15,10 +15,10 @@ load_dotenv()
 @tool
 def get_text_length(text: str) -> int:
     """Returns the length of a text by characters"""
-
-
-
-
+    print(f"get_text_length enter with {text=}")
+    text = text.strip("'\n").strip(
+        '"'
+    )  # stripping away non alphabetic characters just in case
 
     return len(text)
 
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     agent = {"input": lambda x: x["input"] } | prompt | llm | ReActSingleInputOutputParser()
 
     agent_step: Union[AgentAction, AgentFinish]  = agent.invoke(
-        {"input": "What is the length of 'DOG' in characters?"}
+        {"input": "What is the length of in characters of the text DOG ?"}
     )
     
     print(agent_step)

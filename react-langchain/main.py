@@ -5,6 +5,7 @@ from langchain.agents.output_parsers import ReActSingleInputOutputParser
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.schema import AgentAction, AgentFinish
+from langchain.agents.format_scratchpad import format_log_to_str
 from langchain.tools import Tool, tool
 from langchain.tools.render import render_text_description
 
@@ -60,7 +61,7 @@ if __name__ == '__main__':
     Begin!
 
     Question: {input}
-    Thought: 
+    Thought:  {agent_scratchpad}
     """
     
     prompt = PromptTemplate.from_template(template=template).partial(
@@ -74,11 +75,24 @@ if __name__ == '__main__':
         model="gpt-4o-mini",
         stop=["\nObservation", "Observation"],
     )
+    intermediate_steps = []
     
-    agent = {"input": lambda x: x["input"] } | prompt | llm | ReActSingleInputOutputParser()
+    agent = (
+        {
+            "input": lambda x: x["input"],
+            "agent_scratchpad": lambda x: format_log_to_str(x["agent_scratchpad"]),
+        }
+        | prompt
+        | llm
+        | ReActSingleInputOutputParser()
+    )
 
-    agent_step: Union[AgentAction, AgentFinish]  = agent.invoke(
-        {"input": "What is the length of in characters of the text DOG ?"}
+    
+    agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
+        {
+            "input": "What is the length in characters of the text DOG",
+            "agent_scratchpad": intermediate_steps,
+        }
     )
     
     print(agent_step)
@@ -88,5 +102,5 @@ if __name__ == '__main__':
         tool_input = agent_step.tool_input
         
         observation = tool_to_use.func(str(tool_input))
-        
         print(observation)
+        intermediate_steps.append(agent_step, )

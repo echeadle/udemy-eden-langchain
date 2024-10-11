@@ -1,25 +1,40 @@
+from typing import Union, List
+
 from dotenv import load_dotenv
-from langchain.agents import tool
-from langchain.prompts.prompt import PromptTemplate
-from langchain.tools.render import render_text_description
-from langchain_openai import ChatOpenAI
-from langchain.agents.format_scratchpad import format_log_to_str
 from langchain.agents.output_parsers import ReActSingleInputOutputParser
+from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate
+from langchain.schema import AgentAction, AgentFinish
+from langchain.tools import Tool, tool
+from langchain.tools.render import render_text_description
 
 
 load_dotenv()
 
+
 @tool
-def get_text_length(text:str)-> int:
+def get_text_length(text: str) -> int:
     """Returns the length of a text by characters"""
-    
+
+
+
+
+
     return len(text)
+
+
+def find_tool_by_name(tools: List[Tool], tool_name: str) -> Tool:
+    for tool in tools:
+        if tool.name == tool_name:
+            return tool
+    raise ValueError(f"Tool with name {tool_name} not found")
+
 
 if __name__ == '__main__':
     print("Hello React LangChain!")
     tools = [get_text_length]
-    
-    template= """
+
+    template = """
     Answer the following questions as best you can. You have access to the following tools:
 
     {tools}
@@ -56,10 +71,22 @@ if __name__ == '__main__':
 
     llm = ChatOpenAI(
         temperature=0,
+        model="gpt-4o-mini",
         stop=["\nObservation", "Observation"],
     )
     
     agent = {"input": lambda x: x["input"] } | prompt | llm | ReActSingleInputOutputParser()
 
-    res = agent.invoke({"input": "What is the length of 'DOG' in characters?"})
-    print(res)
+    agent_step: Union[AgentAction, AgentFinish]  = agent.invoke(
+        {"input": "What is the length of 'DOG' in characters?"}
+    )
+    
+    print(agent_step)
+    if isinstance(agent_step, AgentAction):
+        tool_name = agent_step.tool
+        tool_to_use = find_tool_by_name(tools, tool_name)
+        tool_input = agent_step.tool_input
+        
+        observation = tool_to_use.func(str(tool_input))
+        
+        print(observation)
